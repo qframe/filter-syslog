@@ -1,0 +1,32 @@
+version: '3'
+services:
+  rsyslog:
+    image: qnib/alplain-rsyslog@sha256:88e2e6261646c9dbd108dd7d5b301b1f570164192ae5efb5e2978379949b905d
+    ports:
+          - "514:514"
+          - "514:514/udp"
+    environment:
+     - FORWARD_TO_ELASTICSEARCH=true
+     - FORWARD_TO_FILE=true
+  elasticsearch:
+    image: qnib/plain-elasticsearch:5.5.1
+    environment:
+      ES_HEAP_MAX: "512m"
+      ES_HEAP_MIN: "512m"
+      ES_NODE_MASTER: "true"
+      ES_NODE_DATA: "true"
+    ports:
+      - "9200:9200"
+    volumes:
+      - /var/lib/elasticsearch
+  kibana:
+    image: qnib/plain-kibana5:5.5.1
+    ports:
+      - "5601:5601"
+    environment:
+        ES_MASTER_HOST: tasks.elasticsearch
+  golang:
+    image: qnib/uplain-golang:1.9
+    command: wait.sh
+    volumes:
+      - ${GOPATH}/src/:/usr/local/src/

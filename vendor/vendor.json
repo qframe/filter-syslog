@@ -1,0 +1,67 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "zDn6rjeNQNGXBdDfMa4pJ1vw8gs=",
+			"path": "github.com/blackjack/syslog",
+			"revision": "4ea3f32c1eb1115ad9e010eeff314fffc5fc8638",
+			"revisionTime": "2013-09-22T06:43:54Z"
+		},
+		{
+			"checksumSHA1": "Sv3dOepRpckPwxg+lkCZrCrTSDc=",
+			"path": "github.com/phemmer/sawmill",
+			"revision": "e2451da4038ffc82c6e474b0f22ffbc4105e478b",
+			"revisionTime": "2015-12-23T18:31:55Z"
+		},
+		{
+			"checksumSHA1": "tlyrQjX2rk4SmKLzq8nTWIGGbIU=",
+			"path": "github.com/phemmer/sawmill/event",
+			"revision": "e2451da4038ffc82c6e474b0f22ffbc4105e478b",
+			"revisionTime": "2015-12-23T18:31:55Z"
+		},
+		{
+			"checksumSHA1": "A+/xkIkm/Ch3Qt0/Ys5sQUrXykw=",
+			"path": "github.com/phemmer/sawmill/event/formatter",
+			"revision": "e2451da4038ffc82c6e474b0f22ffbc4105e478b",
+			"revisionTime": "2015-12-23T18:31:55Z"
+		},
+		{
+			"checksumSHA1": "+xBI8mgl40jXgYHA8WCShFsSeLA=",
+			"path": "github.com/phemmer/sawmill/handler/filter",
+			"revision": "e2451da4038ffc82c6e474b0f22ffbc4105e478b",
+			"revisionTime": "2015-12-23T18:31:55Z"
+		},
+		{
+			"checksumSHA1": "fnD95DcHaq3IC3OFAB/2zIXMCoU=",
+			"path": "github.com/phemmer/sawmill/handler/syslog",
+			"revision": "e2451da4038ffc82c6e474b0f22ffbc4105e478b",
+			"revisionTime": "2015-12-23T18:31:55Z"
+		},
+		{
+			"checksumSHA1": "7YFTPt9f+yO7cfJKZPhyrj4PHRk=",
+			"path": "github.com/phemmer/sawmill/handler/writer",
+			"revision": "e2451da4038ffc82c6e474b0f22ffbc4105e478b",
+			"revisionTime": "2015-12-23T18:31:55Z"
+		},
+		{
+			"checksumSHA1": "nqWNlnMmVpt628zzvyo6Yv2CX5Q=",
+			"path": "golang.org/x/crypto/ssh/terminal",
+			"revision": "81e90905daefcd6fd217b62423c0908922eadb30",
+			"revisionTime": "2017-08-25T20:24:07Z"
+		},
+		{
+			"checksumSHA1": "w70GrQt8nhjc6j0i3rEZjWuSpKY=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "7ddbeae9ae08c6a06a59597f0c9edbc5ff2444ce",
+			"revisionTime": "2017-09-01T16:16:44Z"
+		},
+		{
+			"checksumSHA1": "gVfCD++7aVcdKF2spv6XkEM/wYw=",
+			"path": "golang.org/x/sys/windows",
+			"revision": "7ddbeae9ae08c6a06a59597f0c9edbc5ff2444ce",
+			"revisionTime": "2017-09-01T16:16:44Z"
+		}
+	],
+	"rootPath": "github.com/qframe/filter-syslog"
+}
