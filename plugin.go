@@ -11,8 +11,7 @@ import (
 	"github.com/qframe/types/constants"
 	"github.com/qframe/types/syslog"
 	"github.com/deckarep/golang-set"
-
-	"encoding/json"
+	"sync"
 )
 
 const (
@@ -23,6 +22,7 @@ const (
 
 type Plugin struct {
 	*qtypes_plugin.Plugin
+	mu sync.Mutex
 }
 
 func New(qChan qtypes_qchannel.QChan, cfg *config.Config, name string) (p Plugin, err error) {
@@ -32,11 +32,24 @@ func New(qChan qtypes_qchannel.QChan, cfg *config.Config, name string) (p Plugin
 	return
 }
 
+
+// Lock locks the plugins' mutex.
+func (p *Plugin) Lock() {
+	p.mu.Lock()
+}
+
+// Unlock unlocks the plugins' mutex.
+func (p *Plugin) Unlock() {
+	p.mu.Unlock()
+}
+
 // Run fetches everything from the Data channel and flushes it to stdout
 func (p *Plugin) Run() {
 	p.Log("notice", fmt.Sprintf("Start plugin v%s", p.Version))
 	setCeeJsonKey := p.CfgStringOr("cee-json-key", "")
 	setEngineNameToHost := p.CfgBoolOr("engine-name-to-host", false)
+	ignoreContainerEvents := p.CfgBoolOr("ignore-container-events", true)
+
 	dc := p.QChan.Data.Join()
 	for {
 		select {
@@ -44,12 +57,13 @@ func (p *Plugin) Run() {
 			switch val.(type) {
 			case qtypes_messages.Message:
 				qm := val.(qtypes_messages.Message)
+				p.Log("trace", "received qtypes_messages.Message")
 				if qm.StopProcessing(p.Plugin, false) {
 					continue
 				}
 				isCee := false
 				if setCeeJsonKey != "" {
-					if v, ok := qm.Tags[setCeeJsonKey]; !ok {
+					if _, ok := qm.Tags[setCeeJsonKey]; !ok {
 						p.Log("error", fmt.Sprintf("could not find 'setSyslogMsgKey' '%s' in kv", setCeeJsonKey))
 					} else {
 						// marshall JSON
@@ -71,6 +85,7 @@ func (p *Plugin) Run() {
 				p.QChan.SendData(sm)
 			case qtypes_messages.ContainerMessage:
 				qm := val.(qtypes_messages.ContainerMessage)
+				p.Log("trace", "received qtypes_messages.ContainerMessage")
 				if qm.StopProcessing(p.Plugin, false) {
 					continue
 				}
@@ -81,16 +96,18 @@ func (p *Plugin) Run() {
 					} else {
 						isCee = true
 						ms := mapset.NewSet(setCeeJsonKey)
-						kv := qm.ParseJsonMap(p.Plugin, ms, map[string]string{})
-						kv["container_name"] = qm.Container.Name
-						kv["container_id"] = qm.Container.ID
-						kv["engine_name"] = qm.Engine.Name
-						mJson, err := json.Marshal(kv)
-						if err != nil {
-							p.Log("error", err.Error())
-							continue
+						newKv := qm.Message.ParseJsonMap(p.Plugin, ms, qm.Tags)
+						p.Lock()
+						for k,v := range newKv {
+							if oldV, ok := qm.Tags[k]; !ok {
+								qm.Tags[k] = v
+							} else {
+								p.Log("debug", fmt.Sprintf("Won't overwrite tag '%s=%s' with val '%s'", k, oldV, v))
+
+							}
 						}
-						qm.Tags[qtypes_syslog.KEY_MSG] = string(mJson)
+						p.Unlock()
+						qm.Tags[qtypes_syslog.KEY_MSG] = qm.Tags[setCeeJsonKey]
 						p.Log("debug", fmt.Sprintf("Overwrite KY_MSG '%s' with '%s'", qtypes_syslog.KEY_MSG, setCeeJsonKey))
 					}
 				}
@@ -108,6 +125,9 @@ func (p *Plugin) Run() {
 				sm := qtypes_messages.NewSyslogMessage(qm.Base, sl)
 				p.QChan.SendData(sm)
 			default:
+				if ignoreContainerEvents {
+					continue
+				}
 				p.Log("trace", fmt.Sprintf("Dunno how to handle type: %s", reflect.TypeOf(val)))
 			}
 		}
