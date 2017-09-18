@@ -21,6 +21,7 @@ func NewMessage(b Base, msg string) Message {
 	return m
 }
 
+// ParseJSONMap iterates over set of potential keys and if unmarshalls the string value of all keys into a new map.
 func (m *Message) ParseJsonMap(p *qtypes_plugin.Plugin, keys mapset.Set, kv map[string]string) map[string]string {
 	res := map[string]string{}
 	it := keys.Iterator()

@@ -150,5 +150,6 @@ func (b *Base) StopProcessing(p *qtypes_plugin.Plugin, allowEmptyInput bool) boo
 		p.Log("trace", msg)
 		return true
 	}
+	b.AppendSource(p.Name)
 	return false
 }
