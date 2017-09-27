@@ -47,9 +47,9 @@ func (p *Plugin) Unlock() {
 func (p *Plugin) Run() {
 	p.Log("notice", fmt.Sprintf("Start plugin v%s", p.Version))
 	setCeeJsonKey := p.CfgStringOr("cee-json-key", "")
+	annotateDockerMeta := p.CfgBoolOr("annotate-docker-meta", false)
 	setEngineNameToHost := p.CfgBoolOr("engine-name-to-host", false)
 	ignoreContainerEvents := p.CfgBoolOr("ignore-container-events", true)
-
 	dc := p.QChan.Data.Join()
 	for {
 		select {
@@ -106,8 +106,19 @@ func (p *Plugin) Run() {
 
 							}
 						}
+						msg := qm.Tags[setCeeJsonKey]
+						// Annotate container/engine information to the JSON string
+						if annotateDockerMeta {
+							annoKv := map[string]string{
+								"engine_name": qm.Engine.Name,
+								"container_id": qm.Container.ID,
+								"container_name": qm.Container.Name,
+							}
+							msg, _ = AnnotateMsg(msg, annoKv)
+							p.Log("debug", fmt.Sprintf("Rewrote JSON string to '%s', marshaled from '%v'", msg, newKv))
+						}
 						p.Unlock()
-						qm.Tags[qtypes_syslog.KEY_MSG] = qm.Tags[setCeeJsonKey]
+						qm.Tags[qtypes_syslog.KEY_MSG] = msg
 						p.Log("debug", fmt.Sprintf("Overwrite KY_MSG '%s' with '%s'", qtypes_syslog.KEY_MSG, setCeeJsonKey))
 					}
 				}
@@ -132,4 +143,13 @@ func (p *Plugin) Run() {
 			}
 		}
 	}
+}
+
+// AnnotateMsg assumes the msg is a JSON string and annotates key/value pairs to the string.
+func AnnotateMsg(msg string, kv map[string]string) (res string, err error) {
+	res = msg[:len(msg)-1]
+	for k,v := range kv {
+		res = fmt.Sprintf(`%s,"%s":"%s"`, res, k,v)
+	}
+	return res+"}",err
 }
